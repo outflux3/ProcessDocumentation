@@ -56,7 +56,8 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
         'body_field'        => '',
         'custom_css'        => '',
         'custom_override'   => '',
-        'tpl_dir'           => ''
+        'tpl_dir'           => '',
+        'render_mode'       => '',
     );
 
 
@@ -92,19 +93,22 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
         // 2) is there a matching process-name.php file?
         // 3) is there a default.php file?
         if($this->tpl_dir) {
+            $this->render_mode = 'Template';
+            $footer = $this->renderDocFooter();
             $dir = $this->config->paths->templates . $this->tpl_dir . '/';
             $file = $dir . $this->page->name . '.php';
             if(file_exists($file)) {
-                return $this->renderPHPfile($file);
+                return $this->renderPHPfile($file) . $footer;
             } else {
                 $file = $dir . 'default.php';
                 if(file_exists($file)) {
-                    return $this->renderPHPfile($file);
+                    return $this->renderPHPfile($file) . $footer;
                 }
             }
         }
 
         // Field Render Mode...
+        $this->render_mode = 'Field';
         return $this->renderDocPage();
     }
 
@@ -118,8 +122,6 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
         }
         return $output ?: "The file did not output any content. Please check it.";
     }
-
-
 
 
 
@@ -144,16 +146,24 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
     }
 
     /**
-     * This may be used to render a more complex doc page and take the logic out of the execute function
-     * especially if we need 2 columns and a nav to other help topics on the left.
+     * Render the Doc page in Field Render mode
+     * 
      * @return [type] [description]
      */
     public function renderDocPage() {
 
-        $moduleInfo = $this->wire('modules')->getModuleInfoVerbose($this);
-        $footerText = "<i class='fa fa-life-ring'></i> Process Documentation v$moduleInfo[versionStr]";
+        $footer = $this->renderDocFooter();
 
-        // Field Render Mode
+        //
+        if(!$this->page->doc_page) {
+            return "<p>No page has been selected to display. Please go to the process page and set the page to display.</p>" . $footer;
+        }
+
+        if(!$this->body_field) {
+            return "<p>No Field has been set. Please set the field to render in the module config.</p>" . $footer;
+        }
+
+        // CUSTOM CSS
         if($this->custom_css) {
             $files = $this->explode($this->custom_css);
             foreach($files as $file) {
@@ -167,27 +177,8 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
             $this->config->styles->add($this->url . '/ProcessDocumentationDefault.css');
         }
 
-        if(!$this->page->doc_page) {
-            return "<p>No page has been selected to display. Please go to the process page and set the page to display.</p>" . '<p class="version detail">' . $footerText . '</p>';
-        }
-
+        // OUTPUT...
         $docPage = $this->page->doc_page;
-
-        // Last updated and user
-        $modified = date('m/d/y g:i A', $docPage->modified);
-        $modby = $docPage->modifiedUser->name;
-        $footerText .= " | Last updated by {$modby} at {$modified}";
-
-        // let users edit the content
-        $footerText .= " | <a href='{$this->page->doc_page->editUrl}' target='_blank'>Edit Content</a>";
-
-        if($this->user->isSuperuser()) {
-            $footerText .= " | <a href='{$this->wire('page')->editUrl}' target='_blank'>Edit Process Settings</a>";
-        }
-
-        if(!$this->body_field) {
-            return "<p>Please set the field to render in the module config.</p>" . '<p class="version detail">' . $footerText . '</p>';
-        }
 
         // in case there are any textformatters, (hanna code)
         $docBody = $docPage->getFormatted($this->body_field);
@@ -207,9 +198,34 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
         $out = '<div class="help-doc">' . $docBody . '</div>';
 
         // footer
-        $out .= '<div class="help-footer"><p class="version detail">' . $footerText . '</p></div>';
+        $out .= '<div class="help-footer">' . $footer . '</div>';
 
         return $out;
+
+    }
+
+
+    public function renderDocFooter() {
+
+        $moduleInfo = $this->wire('modules')->getModuleInfoVerbose($this);
+        $footerText = "<i class='fa fa-life-ring'></i> Process Documentation v$moduleInfo[versionStr]";
+        $footerText .= " | " . $this->render_mode . ' Render Mode';
+
+        // Doc Page - Last updated and user
+        if($this->page->doc_page) {
+            $docPage = $this->page->doc_page;
+            $modified = date('m/d/y g:i A', $docPage->modified);
+            $modby = $docPage->modifiedUser->name;
+            $footerText .= " | Last updated by {$modby} at {$modified}";
+            // let users edit the content
+            $footerText .= " | <a href='{$this->page->doc_page->editUrl}' target='_blank'>Edit Content</a>";
+        }
+
+        if($this->user->isSuperuser()) {
+            $footerText .= " | <a href='{$this->wire('page')->editUrl}' target='_blank'>Edit Process Settings</a>";
+        }
+
+        return '<p class="version detail">' . $footerText . '</p>';
 
     }
 
