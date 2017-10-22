@@ -183,14 +183,17 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
         // in case there are any textformatters, (hanna code)
         $docBody = $docPage->getFormatted($this->body_field);
 
-        if(wire('modules')->get('TextformatterMarkupCSS')) {
+        // this textformatter is installed by default, but in case the user has uninstalled it, check isInstalled.
+        // it is possible that the user will want to use a different textformatter, for example
+        // one that adds UiKit classes, instead of proprietary classes used by the default css.
+        if(wire('modules')->isInstalled('TextformatterMarkupCSS')) {
             $mcss = wire('modules')->get('TextformatterMarkupCSS');
             $mcss->format($docBody);
         }
 
-        // if jquery tabs is intalled, apply that textformatter here instead of directly, in case the user is using the same
-        // shortcodes with a different textformatter
-        if(wire('modules')->get('TextformatterJqueryUITabs')) {
+        // this textformatter is installed by default, but in case the user has uninstalled it, check isInstalled.
+        // this textformatter should be applied via api, since it doesn't really have any use in the frontend.
+        if(wire('modules')->isInstalled('TextformatterJqueryUITabs')) {
             $jqtabs = wire('modules')->get('TextformatterJqueryUITabs');
             $jqtabs->format($docBody);
         }
