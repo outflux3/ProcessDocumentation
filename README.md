@@ -1,7 +1,9 @@
 ProcessDocumentation
 =======================
 
-Allows unliimited process pages (admin) that each render formatted content. Used for creating documentation, wikis or other display pages in the admin.
+Allows unliimited process pages (admin) that each render formatted content. 
+
+Used for creating documentation, wikis, changelogs & version statements, to-do lists, or other display pages in the admin.
 
 * In the module config you can specify the default field to render in Field Render Mode.
 * You can use jQuery UI tabs, using the syntax {tab=Title of Tab} content {tab=Title of 2nd tab} content {/tabs}
@@ -11,9 +13,9 @@ Allows unliimited process pages (admin) that each render formatted content. Used
 * No default CSS files are loaded when in Template Render Mode; You have to add any css dependencies, using the api from your file.
 * In template render mode, output formatting is turned on for any pages that are to be rendered.
 
-##Support
-coming soon
+## Support
 
+https://processwire.com/talk/topic/17488-module-preview-process-documentation/
 
 ## License
 
