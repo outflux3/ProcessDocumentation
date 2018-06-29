@@ -246,7 +246,7 @@ class ProcessDocumentation extends Process implements ConfigurableModule {
 			$footerText .= " | <a href='{$this->wire('page')->editUrl}' target='_blank'><i class='fa fa-cogs'></i> Edit Process Settings</a>";
 		}
 
-		if(wire('modules')->isInstalled('Pages2Pdf')) {
+		if(wire('modules')->isInstalled('Pages2Pdf') && isset($docPage)) {
 			$footerText .= ' | <a href="' . $this->page->url . '?downloadPDF=' . $docPage->id . '"><i class="fa fa-download"></i> Download PDF</a>';
 		}
 
